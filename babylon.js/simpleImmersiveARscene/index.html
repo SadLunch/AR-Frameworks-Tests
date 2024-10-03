@@ -100,7 +100,7 @@
             window.engine = await asyncEngineCreation();
             if (!engine) throw 'engine should not be null.';
             startRenderLoop(engine, canvas);
-            window.scene = await createScene();
+            window.scene = await createScene(); //idk why but here it can be with or without await. but since createScene() is async i'll use await just to be safe
         };
         initFunction().then(() => {
             scene.then(returnedScene => { sceneToRender = returnedScene; });
