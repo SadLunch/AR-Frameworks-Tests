@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A-Frame with Continuous GPS-based Object Activation</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+  <a-scene>
+    <!-- AR content will be added dynamically based on user's location -->
+  </a-scene>
+
+  <script>
+    const activationDistance = 5; // Distance in meters for activation threshold
+    let objectPlaced = false; // Track whether the object has been placed already
+
+    function toRadians(degrees) {
+      return degrees * Math.PI / 180;
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Earth's radius in meters
+      const φ1 = toRadians(lat1);
+      const φ2 = toRadians(lat2);
+      const Δφ = toRadians(lat2 - lat1);
+      const Δλ = toRadians(lon2 - lon1);
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c; // Distance in meters
+    }
+
+    function setUserPosition(position) {
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      // Define target location
+      const targetLat = 38.65103;
+      const targetLon = -9.17383;
+
+      // Calculate the distance between user and target
+      const distance = calculateDistance(userLat, userLon, targetLat, targetLon);
+
+      // Check if the user is within the activation distance and the object isn't already placed
+      if (distance <= activationDistance && !objectPlaced) {
+        // If within the threshold, place the object in A-Frame
+        const scene = document.querySelector('a-scene');
+        const entity = document.createElement('a-box');
+        entity.setAttribute('color', 'red');
+        entity.setAttribute('depth', '2');
+        entity.setAttribute('height', '2');
+        entity.setAttribute('width', '2');
+        entity.setAttribute('position', `0 1.5 0`);  // Adjusted to appear in front of the camera
+        scene.appendChild(entity);
+        objectPlaced = true; // Mark the object as placed
+      } else if (distance > activationDistance && objectPlaced) {
+        const entity = document.querySelector('a-box');
+        entity.remove();
+        objectPlaced = false;
+      } else if (distance > activationDistance) {
+        console.log(`You are ${Math.round(distance)} meters away. AR will activate within ${activationDistance} meters.`);
+      }
+    }
+
+    function getUserLocation() {
+      if (navigator.geolocation) {
+        // Continuously watch the user's position
+        navigator.geolocation.watchPosition(setUserPosition, (err) => console.error(err));
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    // Start watching location on page load
+    window.onload = getUserLocation;
+  </script>
+</body>
+
+</html>
