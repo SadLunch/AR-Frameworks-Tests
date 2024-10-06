@@ -12,6 +12,8 @@
 <body>
   <a-scene>
     <!-- AR content will be added dynamically based on user's location -->
+     <!-- Camera -->
+     <a-entity camera look-controls position="0 1.6 0"></a-entity>
   </a-scene>
 
   <script>
@@ -53,6 +55,7 @@
         // If within the threshold, place the object in A-Frame
         const scene = document.querySelector('a-scene');
         const entity = document.createElement('a-box');
+        entity.setAttribute('id', 'box-object')
         entity.setAttribute('color', 'red');
         entity.setAttribute('depth', '2');
         entity.setAttribute('height', '2');
@@ -61,7 +64,7 @@
         scene.appendChild(entity);
         objectPlaced = true; // Mark the object as placed
       } else if (distance > activationDistance && objectPlaced) {
-        const entity = document.querySelector('a-box');
+        const entity = document.querySelector('#box-object');
         entity.remove();
         objectPlaced = false;
       } else if (distance > activationDistance) {
