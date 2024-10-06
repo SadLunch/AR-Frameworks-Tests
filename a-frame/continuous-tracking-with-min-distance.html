@@ -7,18 +7,34 @@
   <title>A-Frame with Continuous GPS-based Object Activation</title>
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
+  <style>
+    #distance-display {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 999;
+      /* Ensure it's visible above the AR scene */
+    }
+  </style>
 </head>
 
 <body>
+  <div id="distance-display">Calculating distance...</div>
   <a-scene>
     <!-- AR content will be added dynamically based on user's location -->
-     <!-- Camera -->
-     <a-entity camera look-controls position="0 1.6 0"></a-entity>
+    <!-- Camera -->
+    <a-entity camera look-controls position="0 1.6 0"></a-entity>
   </a-scene>
 
   <script>
     const activationDistance = 15; // Distance in meters for activation threshold
     let objectPlaced = false; // Track whether the object has been placed already
+    const distanceDisplay = document.getElementById('distance-display');
 
     function toRadians(degrees) {
       return degrees * Math.PI / 180;
@@ -49,6 +65,10 @@
 
       // Calculate the distance between user and target
       const distance = calculateDistance(userLat, userLon, targetLat, targetLon);
+
+      // Update the on-screen distance display
+      distanceDisplay.textContent = `You are ${Math.round(distance)} meters away from the target.`;
+
 
       // Check if the user is within the activation distance and the object isn't already placed
       if (distance <= activationDistance && !objectPlaced) {
