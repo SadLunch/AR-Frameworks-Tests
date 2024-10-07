@@ -55,6 +55,20 @@
       return R * c; // Distance in meters
     }
 
+    // Calculate the bearing from one point to another (in degrees)
+    function calculateBearing(lat1, lon1, lat2, lon2) {
+      const φ1 = toRadians(lat1);
+      const φ2 = toRadians(lat2);
+      const Δλ = toRadians(lon2 - lon1);
+
+      const y = Math.sin(Δλ) * Math.cos(φ2);
+      const x = Math.cos(φ1) * Math.sin(φ2) -
+        Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+      const θ = Math.atan2(y, x);
+
+      return (θ * 180 / Math.PI + 360) % 360; // Convert to degrees and normalize
+    }
+
     function setUserPosition(position) {
       const userLat = position.coords.latitude;
       const userLon = position.coords.longitude;
@@ -63,8 +77,13 @@
       const targetLat = 38.65103;
       const targetLon = -9.17383;
 
-      // Calculate the distance between user and target
+      // Calculate the distance and bearing between user and target
       const distance = calculateDistance(userLat, userLon, targetLat, targetLon);
+      const bearing = calculateBearing(userLat, userLon, targetLat, targetLon);
+
+      // Convert distance and bearing to A-Frame Cartesian coordinates
+      const x = distance * Math.sin(toRadians(bearing));  // East-West direction
+      const z = distance * Math.cos(toRadians(bearing));  // North-South direction
 
       // Update the on-screen distance display
       distanceDisplay.textContent = `You are ${distance} meters away from the target.`;
@@ -80,7 +99,7 @@
         entity.setAttribute('depth', '2');
         entity.setAttribute('height', '2');
         entity.setAttribute('width', '2');
-        entity.setAttribute('position', `0 1.5 0`);  // Adjusted to appear in front of the camera
+        entity.setAttribute('position', `${x} 1.5 ${-z}`);  // Adjusted to appear in front of the camera
         scene.appendChild(entity);
         objectPlaced = true; // Mark the object as placed
       } else if (distance > activationDistance && objectPlaced) {
