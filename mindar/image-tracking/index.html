@@ -8,12 +8,12 @@
     <style>
       #scene {
         position: relative;
-        z-index: 0;
       }
 
-      #capture {
+      #overlay {
+        top: 10px;
         position: absolute;
-        z-index: 1;
+        z-index: 10;
       }
     </style>
   </head>
@@ -30,7 +30,10 @@
         <a-gltf-model rotation="0 0 0 " position="0 0 0.1" scale="0.005 0.005 0.005" src="#avatarModel" animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
       </a-entity>
     </a-scene>
-    <button id="capture" onclick="capture();">Capture</button>
+    <div id="overlay">
+      <button id="capture" onclick="capture();">Capture</button>
+    </div>
+    
     <script>
       function capture() {
         console.log("clicked");
