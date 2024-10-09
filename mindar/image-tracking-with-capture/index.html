@@ -66,7 +66,7 @@
         let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
 
         canvas.getContext('2d').drawImage(imgData, drawLeft, drawTop, drawWidth, drawHeight);
-        //overlay.appendChild(canvas);
+        overlay.appendChild(canvas);
         video.play();
         const btnShare = document.createElement('button');
         btnShare.setAttribute('id', 'button-share')
