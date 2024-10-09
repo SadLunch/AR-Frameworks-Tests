@@ -108,7 +108,7 @@
 
       function setupRecording() {
         const canvas = document.querySelector("canvas");
-        canvas.captureStream(25);
+        let stream = canvas.captureStream(25);
         mediaRecorder = new MediaRecorder(stream, {
             mimeType: "video/webm; codecs=vp9"
         });
