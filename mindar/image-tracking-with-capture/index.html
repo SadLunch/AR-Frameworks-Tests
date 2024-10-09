@@ -31,10 +31,11 @@
       </a-entity>
     </a-scene>
     <div id="overlay">
-      <button id="capture" onclick="capture();" onload="setupRecording();">Capture</button>
+      <button id="capture" onclick="capture();">Capture</button>
     </div>
     
     <script>
+      window.onload = setupRecording();
       const overlay = document.getElementById('overlay');
       function capture() {
         const video = document.querySelector("video");
