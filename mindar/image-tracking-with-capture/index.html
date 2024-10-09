@@ -31,16 +31,20 @@
       </a-entity>
     </a-scene>
     <div id="overlay">
-      <button id="capture" onclick="capture();">Capture</button>
+      <button id="capture" onclick="capture();" onload="setupRecording();">Capture</button>
     </div>
     
     <script>
       const overlay = document.getElementById('overlay');
       function capture() {
         const video = document.querySelector("video");
-
-        const canvas = document.createElement("canvas");
-        canvas.setAttribute('id', 'picture-taken')
+        let canvas;
+        if (document.querySelector('#picture-taken')) {
+          canvas = document.querySelector('#picture-taken');
+        } else {
+          canvas = document.createElement("canvas");
+          canvas.setAttribute('id', 'picture-taken')
+        }
         video.pause();
 
         // Obtain the view style data of the video
@@ -66,10 +70,11 @@
         let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
 
         canvas.getContext('2d').drawImage(imgData, drawLeft, drawTop, drawWidth, drawHeight);
-        overlay.appendChild(canvas);
+        document.appendChild(canvas);
         video.play();
         const btnShare = document.createElement('button');
         btnShare.setAttribute('id', 'button-share')
+        btnShare.innerText = "Share";
         btnShare.addEventListener('click', share);
         overlay.appendChild(btnShare);
       }
@@ -99,6 +104,42 @@
         })
         const btnShare = document.getElementById('button-share');
         document.removeChild(btnShare);
+      }
+
+      function setupRecording() {
+        const canvas = document.querySelector("canvas");
+        canvas.captureStream(25);
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: "video/webm; codecs=vp9"
+        });
+
+        var recordedChunks = [];
+
+        mr.ondataavailable = function (event) {
+            recordedChunks.push(event.data);
+        }
+
+        mr.onstop = function (event) {
+            var blob = new Blob(recordedChunks, {type: "video/webm" });
+            var url = URL.createObjectURL(blob);
+            var video$ = document.createElement('video');
+            video$.setAttribute('id', 'output-video');
+            document.body.appendChild(video$);
+            recording.then(url => video$.setAttribute('src', url) )
+        }
+
+        const btnCapture = docuemnt.getElementById('capture');
+        btnCapture.addEventListener('onmousedown', () => {
+          mediaRecorder.start();
+          const btnCapture = docuemnt.getElementById('capture');
+          btnCapture.style.backgroundColor = 'red';
+        })
+
+        btnCapture.addEventListener('onmouseup', () => {
+          mediaRecorder.stop();
+          const btnCapture = docuemnt.getElementById('capture');
+          btnCapture.style.backgroundColor = 'grey';
+        })
       }
     </script>
   </body>
