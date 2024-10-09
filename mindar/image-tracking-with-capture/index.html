@@ -38,31 +38,27 @@
       const overlay = document.getElementById('overlay');
       function capture() {
         const video = document.querySelector("video");
+
         const canvas = document.createElement("canvas");
         video.pause();
 
-        // Obtain the view style data of the video
-        const style = window.getComputedStyle(video),
-          width = parseFloat(style.getPropertyValue('width')),
-          height = parseFloat(style.getPropertyValue('height')),
-          top = parseFloat(style.getPropertyValue('top')),
-          left = parseFloat(style.getPropertyValue('left'));
+        let v_width = video.clientWidth*2;
+        let v_height = video.clientHeight*2;
+        
+        canvas.width = v_width;
+        canvas.height = v_height;
 
-        // The width and height of the video may exceed the screen to achieve a full screen effect, 
-        // so screenshots need to only capture the visible part of the video.
-        const imgLeft = left * video.videoWidth / width
-        const imgTop = top * video.videoHeight / height
-        const drawLeft = imgLeft > 0 ? 0 : imgLeft
-        const drawTop = imgTop > 0 ? 0 : imgTop
-        const drawWidth = video.videoWidth
-        const drawHeight = video.videoHeight
-        canvas.width = video.videoWidth + imgLeft * 2
-        canvas.height = video.videoHeight + imgTop * 2
+        let element = document.querySelector('video'),
+            style = window.getComputedStyle(element),
+            top = style.getPropertyValue('top');
 
-        // render
-        canvas.getContext('2d').drawImage(video, drawLeft, drawTop, drawWidth, drawHeight);
+        canvas.getContext('2d').drawImage(video, 0, parseFloat(top), v_width, v_height);
+
+        let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
+
+        canvas.getContext('2d').drawImage(imgData, 0, 0, v_width, v_height);
         overlay.appendChild(canvas);
-        video.play()
+        video.play();
       }
     </script>
   </body>
