@@ -80,19 +80,39 @@
       }
 
       function share() {
-        const canvas = document.getElementById('picture-taken');
-        canvas.toBlob(async (blob) => {
-          // Even if you want to share just one file you need to
-          // send them as an array of files.
-          const files = [new File([blob], 'image.png', { type: blob.type })]
+        if (document.querySelector('#picture-taken')) {
+          const canvas = document.querySelector('picture-taken');
+          canvas.toBlob(async (blob) => {
+            // Even if you want to share just one file you need to
+            // send them as an array of files.
+            const files = [new File([blob], 'image.png', { type: blob.type })]
+            const shareData = {
+              text: 'Picture to share',
+              title: 'Share...',
+              files,
+            }
+            if (navigator.canShare(shareData)) {
+              try {
+                await navigator.share(shareData)
+              } catch (err) {
+                if (err.name !== 'AbortError') {
+                  console.error(err.name, err.message)
+                }
+              }
+            } else {
+              console.warn('Sharing not supported', shareData)
+            }
+          })
+        } else if (document.querySelector('#output-video')) {
+          const files = [new File([blob], 'video.webm', { type: blob.type })]
           const shareData = {
-            text: 'Some text',
-            title: 'Some title',
+            text: 'Video to share',
+            title: 'Share...',
             files,
           }
           if (navigator.canShare(shareData)) {
             try {
-              await navigator.share(shareData)
+              navigator.share(shareData)
             } catch (err) {
               if (err.name !== 'AbortError') {
                 console.error(err.name, err.message)
@@ -101,9 +121,10 @@
           } else {
             console.warn('Sharing not supported', shareData)
           }
-        })
+        }
+        
         const btnShare = document.getElementById('button-share');
-        document.removeChild(btnShare);
+        document.body.removeChild(btnShare);
       }
 
       function setupRecording() {
@@ -133,7 +154,7 @@
         const btnCapture = document.getElementById('capture');
         btnCapture.style.backgroundColor = 'red';
 
-        btnCapture.addEventListener('onmouseup', () => {
+        btnCapture.addEventListener('mouseup', () => {
           mediaRecorder.stop();
           const btnCapture = document.getElementById('capture');
           btnCapture.style.backgroundColor = 'grey';
