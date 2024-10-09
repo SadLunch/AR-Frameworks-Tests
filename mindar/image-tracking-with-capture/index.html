@@ -32,16 +32,35 @@
     </a-scene>
     <div id="overlay">
       <button id="capture" onclick="capture();">Capture</button>
-      <canvas id="canvas" width="320" height="240"></canvas>
     </div>
     
     <script>
-      const player = document.getElementById('player');
-      const canvas = document.getElementById('canvas');
-      const context = canvas.getContext('2d');
       function capture() {
-        context.drawImage(player, 0, 0, canvas.width, canvas.height);
-        player.srcObject.getVideoTracks().forEach(track => track.stop());
+        const video = document.querySelector("video");
+        const canvas = document.createElement("canvas");
+        video.pause();
+
+        // Obtain the view style data of the video
+        const style = window.getComputedStyle(video),
+          width = parseFloat(style.getPropertyValue('width')),
+          height = parseFloat(style.getPropertyValue('height')),
+          top = parseFloat(style.getPropertyValue('top')),
+          left = parseFloat(style.getPropertyValue('left'));
+
+        // The width and height of the video may exceed the screen to achieve a full screen effect, 
+        // so screenshots need to only capture the visible part of the video.
+        const imgLeft = left * video.videoWidth / width
+        const imgTop = top * video.videoHeight / height
+        const drawLeft = imgLeft > 0 ? 0 : imgLeft
+        const drawTop = imgTop > 0 ? 0 : imgTop
+        const drawWidth = video.videoWidth
+        const drawHeight = video.videoHeight
+        canvas.width = video.videoWidth + imgLeft * 2
+        canvas.height = video.videoHeight + imgTop * 2
+
+        // render
+        canvas.getContext('2d').drawImage(video, drawLeft, drawTop, drawWidth, drawHeight);
+        video.play()
       }
     </script>
   </body>
