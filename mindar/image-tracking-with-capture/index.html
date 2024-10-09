@@ -40,6 +40,7 @@
         const video = document.querySelector("video");
 
         const canvas = document.createElement("canvas");
+        canvas.setAttribute('id', 'picture-taken')
         video.pause();
 
         // Obtain the view style data of the video
@@ -65,8 +66,39 @@
         let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
 
         canvas.getContext('2d').drawImage(imgData, drawLeft, drawTop, drawWidth, drawHeight);
-        overlay.appendChild(canvas);
+        //overlay.appendChild(canvas);
         video.play();
+        const btnShare = document.createElement('button');
+        btnShare.setAttribute('id', 'button-share')
+        btnShare.addEventListener('click', share);
+        overlay.appendChild(btnShare);
+      }
+
+      function share() {
+        const canvas = document.getElementById('picture-taken');
+        canvas.toBlob(async (blob) => {
+          // Even if you want to share just one file you need to
+          // send them as an array of files.
+          const files = [new File([blob], 'image.png', { type: blob.type })]
+          const shareData = {
+            text: 'Some text',
+            title: 'Some title',
+            files,
+          }
+          if (navigator.canShare(shareData)) {
+            try {
+              await navigator.share(shareData)
+            } catch (err) {
+              if (err.name !== 'AbortError') {
+                console.error(err.name, err.message)
+              }
+            }
+          } else {
+            console.warn('Sharing not supported', shareData)
+          }
+        })
+        const btnShare = document.getElementById('button-share');
+        document.removeChild(btnShare);
       }
     </script>
   </body>
