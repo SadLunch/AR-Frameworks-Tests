@@ -115,11 +115,11 @@
 
         var recordedChunks = [];
 
-        mr.ondataavailable = function (event) {
+        mediaRecorder.ondataavailable = function (event) {
             recordedChunks.push(event.data);
         }
 
-        mr.onstop = function (event) {
+        mediaRecorder.onstop = function (event) {
             var blob = new Blob(recordedChunks, {type: "video/webm" });
             var url = URL.createObjectURL(blob);
             var video$ = document.createElement('video');
