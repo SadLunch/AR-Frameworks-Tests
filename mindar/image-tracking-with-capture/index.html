@@ -42,21 +42,29 @@
         const canvas = document.createElement("canvas");
         video.pause();
 
-        let v_width = video.clientWidth;
-        let v_height = video.clientHeight;
-        
-        canvas.width = v_width;
-        canvas.height = v_height;
+        // Obtain the view style data of the video
+        const style = window.getComputedStyle(video),
+          width = parseFloat(style.getPropertyValue('width')),
+          height = parseFloat(style.getPropertyValue('height')),
+          top = parseFloat(style.getPropertyValue('top')),
+          left = parseFloat(style.getPropertyValue('left'));
 
-        let element = document.querySelector('video'),
-            style = window.getComputedStyle(element),
-            top = style.getPropertyValue('top');
+        // The width and height of the video may exceed the screen to achieve a full screen effect, 
+        // so screenshots need to only capture the visible part of the video.
+        const imgLeft = left * video.videoWidth / width
+        const imgTop = top * video.videoHeight / height
+        const drawLeft = imgLeft > 0 ? 0 : imgLeft
+        const drawTop = imgTop > 0 ? 0 : imgTop
+        const drawWidth = video.videoWidth
+        const drawHeight = video.videoHeight
+        canvas.width = video.videoWidth + imgLeft * 2
+        canvas.height = video.videoHeight + imgTop * 2
 
-        canvas.getContext('2d').drawImage(video, 0, parseFloat(top), v_width, v_height);
+        canvas.getContext('2d').drawImage(video, drawLeft, drawTop, drawWidth, drawHeight);
 
         let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
 
-        canvas.getContext('2d').drawImage(imgData, 0, 0, v_width, v_height);
+        canvas.getContext('2d').drawImage(imgData, drawLeft, drawTop, drawWidth, drawHeight);
         overlay.appendChild(canvas);
         video.play();
       }
