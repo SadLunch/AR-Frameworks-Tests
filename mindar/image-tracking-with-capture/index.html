@@ -31,11 +31,10 @@
       </a-entity>
     </a-scene>
     <div id="overlay">
-      <button id="capture" onclick="capture();">Capture</button>
+      <button id="capture" onclick="capture();" onmousedown="setupRecording();">Capture</button>
     </div>
     
     <script>
-      document.querySelector('video').onload = setupRecording();
       const overlay = document.getElementById('overlay');
       function capture() {
         const video = document.querySelector("video");
@@ -129,16 +128,14 @@
             recording.then(url => video$.setAttribute('src', url) )
         }
 
-        const btnCapture = docuemnt.getElementById('capture');
-        btnCapture.addEventListener('onmousedown', () => {
-          mediaRecorder.start();
-          const btnCapture = docuemnt.getElementById('capture');
-          btnCapture.style.backgroundColor = 'red';
-        })
+        mediaRecorder.start();
+
+        const btnCapture = document.getElementById('capture');
+        btnCapture.style.backgroundColor = 'red';
 
         btnCapture.addEventListener('onmouseup', () => {
           mediaRecorder.stop();
-          const btnCapture = docuemnt.getElementById('capture');
+          const btnCapture = document.getElementById('capture');
           btnCapture.style.backgroundColor = 'grey';
         })
       }
