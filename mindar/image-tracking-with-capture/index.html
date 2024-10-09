@@ -156,6 +156,11 @@
 
         btnCapture.addEventListener('mouseup', () => {
           mediaRecorder.stop();
+          const btnShare = document.createElement('button');
+          btnShare.setAttribute('id', 'button-share')
+          btnShare.innerText = "Share";
+          btnShare.addEventListener('click', share);
+          overlay.appendChild(btnShare);
           const btnCapture = document.getElementById('capture');
           btnCapture.style.backgroundColor = 'grey';
         })
