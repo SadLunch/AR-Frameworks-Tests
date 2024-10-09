@@ -35,6 +35,7 @@
     </div>
     
     <script>
+      const overlay = document.getElementById('overlay');
       function capture() {
         const video = document.querySelector("video");
         const canvas = document.createElement("canvas");
@@ -60,6 +61,7 @@
 
         // render
         canvas.getContext('2d').drawImage(video, drawLeft, drawTop, drawWidth, drawHeight);
+        overlay.appendChild(canvas);
         video.play()
       }
     </script>
