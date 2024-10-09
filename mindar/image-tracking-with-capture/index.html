@@ -5,9 +5,20 @@
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <title>MindAR Image Tracking Test Website</title>
+    <style>
+      #scene {
+        position: relative;
+      }
+
+      #overlay {
+        top: 10px;
+        position: absolute;
+        z-index: 10;
+      }
+    </style>
   </head>
   <body>
-    <a-scene mindar-image="imageTargetSrc: ./image/targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" id="scene">
+    <a-scene id="player" mindar-image="imageTargetSrc: ./image/targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" id="scene">
       <a-assets>
         <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" />
         <a-asset-item id="avatarModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item>
@@ -19,5 +30,19 @@
         <a-gltf-model rotation="0 0 0 " position="0 0 0.1" scale="0.005 0.005 0.005" src="#avatarModel" animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
       </a-entity>
     </a-scene>
+    <div id="overlay">
+      <button id="capture" onclick="capture();">Capture</button>
+      <canvas id="canvas" width="320" height="240"></canvas>
+    </div>
+    
+    <script>
+      const player = document.getElementById('player');
+      const canvas = document.getElementById('canvas');
+      const context = canvas.getContext('2d');
+      function capture() {
+        context.drawImage(player, 0, 0, canvas.width, canvas.height);
+        player.srcObject.getVideoTracks().forEach(track => track.stop());
+      }
+    </script>
   </body>
 </html>
