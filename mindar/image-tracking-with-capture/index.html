@@ -146,7 +146,7 @@
             var video$ = document.createElement('video');
             video$.setAttribute('id', 'output-video');
             document.body.appendChild(video$);
-            recording.then(url => video$.setAttribute('src', url) )
+            video$.setAttribute('src', url)
         }
 
         mediaRecorder.start();
