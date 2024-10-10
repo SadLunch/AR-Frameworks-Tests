@@ -31,7 +31,7 @@
       </a-entity>
     </a-scene>
     <div id="overlay">
-      <button id="capture" onclick="" onmousedown="setupRecording();">Capture</button>
+      <button id="capture" onclick="test_click()" onmousedown="test_mouse_down()" onmouseup="test_mouse_up()">Capture</button>
     </div>
     
     <script>
@@ -164,6 +164,18 @@
           const btnCapture = document.getElementById('capture');
           btnCapture.style.backgroundColor = 'grey';
         })
+      }
+
+      function test_click() {
+        console.log("clicked");
+      }
+
+      function test_mouse_down() {
+        console.log("mouse down");
+      }
+
+      function test_mouse_up() {
+        console.log("mouse up");
       }
     </script>
   </body>
