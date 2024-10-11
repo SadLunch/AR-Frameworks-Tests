@@ -31,139 +31,135 @@
       </a-entity>
     </a-scene>
     <div id="overlay">
-      <button id="capture" onclick="test_click()" onmousedown="test_mouse_down()" onmouseup="test_mouse_up()">Capture</button>
+      <button id="capture">Capture</button>
     </div>
     
     <script>
-      const overlay = document.getElementById('overlay');
-      function capture() {
-        const video = document.querySelector("video");
-        let canvas;
-        if (document.querySelector('#picture-taken')) {
-          canvas = document.querySelector('#picture-taken');
+      const btnCapture = document.getElementById('capture');
+      let holdTimeout;
+      let isHeld = false;
+      const holdDuration = 1000;
+      let recording;
+      let mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "video/webm; codecs=vp9"
+      });
+
+      function record(canvas) {
+        var recordedChunks = [];
+        return new Promise(function (res, rej) {
+            var stream = canvas.captureStream(25 /*fps*/);
+            
+            mediaRecorder.start();
+
+            mediaRecorder.ondataavailable = function (event) {
+                recordedChunks.push(event.data);
+            }
+
+            mediaRecorder.onstop = function (event) {
+                var blob = new Blob(recordedChunks, {type: "video/webm" });
+                var url = URL.createObjectURL(blob);
+                res(url);
+            }
+        })
+      }
+
+      btnCapture.addEventListener('mousedown', () => {
+        holdTimeout = setTimeout(() => {
+          isHeld = true;
+          // start recording canvas
+          recording = record(canvas)
+        }, holdDuration);
+      });
+
+      btnCapture.addEventListener('mouseup', () => {
+        clearTimeout(holdTimeout);
+
+        if (isHeld) {
+          //stop recording and make video file
+          mediaRecorder.stop();
+          var video$ = document.createElement('video')
+          video$.setAttribute('id', "video$")
+          document.body.appendChild(video$)
+          recording.then(url => video$.setAttribute('src', url) )
         } else {
-          canvas = document.createElement("canvas");
-          canvas.setAttribute('id', 'picture-taken')
+          //take picture
+          const overlay = document.getElementById('overlay');
+          const video = document.querySelector("video");
+          let canvas;
+          if (document.querySelector('#picture-taken')) {
+            canvas = document.querySelector('#picture-taken');
+          } else {
+            canvas = document.createElement("canvas");
+            canvas.setAttribute('id', 'picture-taken')
+          }
+          video.pause();
+
+          // Obtain the view style data of the video
+          const style = window.getComputedStyle(video),
+            width = parseFloat(style.getPropertyValue('width')),
+            height = parseFloat(style.getPropertyValue('height')),
+            top = parseFloat(style.getPropertyValue('top')),
+            left = parseFloat(style.getPropertyValue('left'));
+
+          // The width and height of the video may exceed the screen to achieve a full screen effect, 
+          // so screenshots need to only capture the visible part of the video.
+          const imgLeft = left * video.videoWidth / width
+          const imgTop = top * video.videoHeight / height
+          const drawLeft = imgLeft > 0 ? 0 : imgLeft
+          const drawTop = imgTop > 0 ? 0 : imgTop
+          const drawWidth = video.videoWidth
+          const drawHeight = video.videoHeight
+          canvas.width = video.videoWidth + imgLeft * 2
+          canvas.height = video.videoHeight + imgTop * 2
+
+          canvas.getContext('2d').drawImage(video, drawLeft, drawTop, drawWidth, drawHeight);
+
+          let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
+
+          canvas.getContext('2d').drawImage(imgData, drawLeft, drawTop, drawWidth, drawHeight);
+          document.body.appendChild(canvas);
+          video.play();
         }
-        video.pause();
-
-        // Obtain the view style data of the video
-        const style = window.getComputedStyle(video),
-          width = parseFloat(style.getPropertyValue('width')),
-          height = parseFloat(style.getPropertyValue('height')),
-          top = parseFloat(style.getPropertyValue('top')),
-          left = parseFloat(style.getPropertyValue('left'));
-
-        // The width and height of the video may exceed the screen to achieve a full screen effect, 
-        // so screenshots need to only capture the visible part of the video.
-        const imgLeft = left * video.videoWidth / width
-        const imgTop = top * video.videoHeight / height
-        const drawLeft = imgLeft > 0 ? 0 : imgLeft
-        const drawTop = imgTop > 0 ? 0 : imgTop
-        const drawWidth = video.videoWidth
-        const drawHeight = video.videoHeight
-        canvas.width = video.videoWidth + imgLeft * 2
-        canvas.height = video.videoHeight + imgTop * 2
-
-        canvas.getContext('2d').drawImage(video, drawLeft, drawTop, drawWidth, drawHeight);
-
-        let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
-
-        canvas.getContext('2d').drawImage(imgData, drawLeft, drawTop, drawWidth, drawHeight);
-        document.body.appendChild(canvas);
-        video.play();
         const btnShare = document.createElement('button');
         btnShare.setAttribute('id', 'button-share')
         btnShare.innerText = "Share";
         btnShare.addEventListener('click', share);
         overlay.appendChild(btnShare);
-      }
+      })
 
       function share() {
-        if (document.querySelector('#picture-taken')) {
-          const canvas = document.querySelector('picture-taken');
-          canvas.toBlob(async (blob) => {
-            // Even if you want to share just one file you need to
-            // send them as an array of files.
-            const files = [new File([blob], 'image.png', { type: blob.type })]
-            const shareData = {
-              text: 'Picture to share',
-              title: 'Share...',
-              files,
-            }
-            if (navigator.canShare(shareData)) {
-              try {
-                await navigator.share(shareData)
-              } catch (err) {
-                if (err.name !== 'AbortError') {
-                  console.error(err.name, err.message)
-                }
-              }
-            } else {
-              console.warn('Sharing not supported', shareData)
-            }
-          })
-        } else if (document.querySelector('#output-video')) {
-          const files = [new File([blob], 'video.webm', { type: blob.type })]
-          const shareData = {
-            text: 'Video to share',
-            title: 'Share...',
-            files,
-          }
-          if (navigator.canShare(shareData)) {
-            try {
-              navigator.share(shareData)
-            } catch (err) {
-              if (err.name !== 'AbortError') {
-                console.error(err.name, err.message)
-              }
-            }
-          } else {
-            console.warn('Sharing not supported', shareData)
-          }
-        }
-        
-        const btnShare = document.getElementById('button-share');
-        document.body.removeChild(btnShare);
-      }
+        var player = videojs("video$");
 
-      function setupRecording() {
-        const canvas = document.querySelector("canvas");
-        let stream = canvas.captureStream(25);
-        mediaRecorder = new MediaRecorder(stream, {
-            mimeType: "video/webm; codecs=vp9"
-        });
+        var shareOptions = {
+          socials: [
+            "fb",
+            "tw",
+            "reddit",
+            "gp",
+            "messenger",
+            "linkedin",
+            "whatsapp",
+            "mail",
+          ],
 
-        var recordedChunks = [];
+          url: window.location.href,
+          title: "Share AR experience",
+          description: "Share your AR experience in any of your social media accounts",
+          image: "", //Maybe capture a snapshot at the beggining of the recording to show here
 
-        mediaRecorder.ondataavailable = function (event) {
-            recordedChunks.push(event.data);
-        }
+          // required for Facebook and Messenger
+          fbAppId: "12345",
+          // optional for Facebook
+          redirectUri: window.location.href + "#close",
 
-        mediaRecorder.onstop = function (event) {
-            var blob = new Blob(recordedChunks, {type: "video/webm" });
-            var url = URL.createObjectURL(blob);
-            var video$ = document.createElement('video');
-            video$.setAttribute('id', 'output-video');
-            document.body.appendChild(video$);
-            video$.setAttribute('src', url)
-        }
+          // optinal embed code
+          embedCode:
+            '<iframe src="' +
+            window.location.href +
+            '" width="560" height="315" frameborder="0" allowfullscreen></iframe>',
+        };
 
-        mediaRecorder.start();
-
-        const btnCapture = document.getElementById('capture');
-        btnCapture.style.backgroundColor = 'red';
-
-        btnCapture.addEventListener('mouseup', () => {
-          mediaRecorder.stop();
-          const btnShare = document.createElement('button');
-          btnShare.setAttribute('id', 'button-share')
-          btnShare.innerText = "Share";
-          btnShare.addEventListener('click', share);
-          overlay.appendChild(btnShare);
-          const btnCapture = document.getElementById('capture');
-          btnCapture.style.backgroundColor = 'grey';
-        })
+        player.share(shareOptions);
       }
 
       function test_click() {
@@ -178,5 +174,138 @@
         console.log("mouse up");
       }
     </script>
+
+    <script>
+      // function capture() {
+      //   const video = document.querySelector("video");
+      //   let canvas;
+      //   if (document.querySelector('#picture-taken')) {
+      //     canvas = document.querySelector('#picture-taken');
+      //   } else {
+      //     canvas = document.createElement("canvas");
+      //     canvas.setAttribute('id', 'picture-taken')
+      //   }
+      //   video.pause();
+
+      //   // Obtain the view style data of the video
+      //   const style = window.getComputedStyle(video),
+      //     width = parseFloat(style.getPropertyValue('width')),
+      //     height = parseFloat(style.getPropertyValue('height')),
+      //     top = parseFloat(style.getPropertyValue('top')),
+      //     left = parseFloat(style.getPropertyValue('left'));
+
+      //   // The width and height of the video may exceed the screen to achieve a full screen effect, 
+      //   // so screenshots need to only capture the visible part of the video.
+      //   const imgLeft = left * video.videoWidth / width
+      //   const imgTop = top * video.videoHeight / height
+      //   const drawLeft = imgLeft > 0 ? 0 : imgLeft
+      //   const drawTop = imgTop > 0 ? 0 : imgTop
+      //   const drawWidth = video.videoWidth
+      //   const drawHeight = video.videoHeight
+      //   canvas.width = video.videoWidth + imgLeft * 2
+      //   canvas.height = video.videoHeight + imgTop * 2
+
+      //   canvas.getContext('2d').drawImage(video, drawLeft, drawTop, drawWidth, drawHeight);
+
+      //   let imgData = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
+
+      //   canvas.getContext('2d').drawImage(imgData, drawLeft, drawTop, drawWidth, drawHeight);
+      //   document.body.appendChild(canvas);
+      //   video.play();
+      //   const btnShare = document.createElement('button');
+      //   btnShare.setAttribute('id', 'button-share')
+      //   btnShare.innerText = "Share";
+      //   btnShare.addEventListener('click', share);
+      //   overlay.appendChild(btnShare);
+      // }
+
+      // function share() {
+      //   if (document.querySelector('#picture-taken')) {
+      //     const canvas = document.querySelector('picture-taken');
+      //     canvas.toBlob(async (blob) => {
+      //       // Even if you want to share just one file you need to
+      //       // send them as an array of files.
+      //       const files = [new File([blob], 'image.png', { type: blob.type })]
+      //       const shareData = {
+      //         text: 'Picture to share',
+      //         title: 'Share...',
+      //         files,
+      //       }
+      //       if (navigator.canShare(shareData)) {
+      //         try {
+      //           await navigator.share(shareData)
+      //         } catch (err) {
+      //           if (err.name !== 'AbortError') {
+      //             console.error(err.name, err.message)
+      //           }
+      //         }
+      //       } else {
+      //         console.warn('Sharing not supported', shareData)
+      //       }
+      //     })
+      //   } else if (document.querySelector('#output-video')) {
+      //     const files = [new File([blob], 'video.webm', { type: blob.type })]
+      //     const shareData = {
+      //       text: 'Video to share',
+      //       title: 'Share...',
+      //       files,
+      //     }
+      //     if (navigator.canShare(shareData)) {
+      //       try {
+      //         navigator.share(shareData)
+      //       } catch (err) {
+      //         if (err.name !== 'AbortError') {
+      //           console.error(err.name, err.message)
+      //         }
+      //       }
+      //     } else {
+      //       console.warn('Sharing not supported', shareData)
+      //     }
+      //   }
+        
+      //   const btnShare = document.getElementById('button-share');
+      //   document.body.removeChild(btnShare);
+      // }
+      // function setupRecording() {
+      //   const canvas = document.querySelector("canvas");
+      //   let stream = canvas.captureStream(25);
+      //   mediaRecorder = new MediaRecorder(stream, {
+      //       mimeType: "video/webm; codecs=vp9"
+      //   });
+
+      //   var recordedChunks = [];
+
+      //   mediaRecorder.ondataavailable = function (event) {
+      //       recordedChunks.push(event.data);
+      //   }
+
+      //   mediaRecorder.onstop = function (event) {
+      //       var blob = new Blob(recordedChunks, {type: "video/webm" });
+      //       var url = URL.createObjectURL(blob);
+      //       var video$ = document.createElement('video');
+      //       video$.setAttribute('id', 'output-video');
+      //       document.body.appendChild(video$);
+      //       video$.setAttribute('src', url)
+      //   }
+
+      //   mediaRecorder.start();
+
+      //   const btnCapture = document.getElementById('capture');
+      //   btnCapture.style.backgroundColor = 'red';
+
+      //   btnCapture.addEventListener('mouseup', () => {
+      //     mediaRecorder.stop();
+      //     const btnShare = document.createElement('button');
+      //     btnShare.setAttribute('id', 'button-share')
+      //     btnShare.innerText = "Share";
+      //     btnShare.addEventListener('click', share);
+      //     overlay.appendChild(btnShare);
+      //     const btnCapture = document.getElementById('capture');
+      //     btnCapture.style.backgroundColor = 'grey';
+      //   })
+      // }
+    </script>
+    <script src="node_modules\video.js\dist\video.min.js"></script>
+    <script src="node_modules\videojs-share\dist\videojs-share.min.js"></script>
   </body>
 </html>
