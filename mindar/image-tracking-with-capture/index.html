@@ -40,16 +40,15 @@
       let isHeld = false;
       const holdDuration = 1000;
       let recording;
-      const canvas = await document.querySelector('canvas');
-      var stream = canvas.captureStream(25 /*fps*/);
-      let mediaRecorder = new MediaRecorder(stream, {
-          mimeType: "video/webm; codecs=vp9"
-      });
+      let mediaRecorder;
 
       function record(canvas) {
         var recordedChunks = [];
         return new Promise(function (res, rej) {
-            
+          var stream = canvas.captureStream(25 /*fps*/);
+          mediaRecorder = new MediaRecorder(stream, {
+              mimeType: "video/webm; codecs=vp9"
+          });
             mediaRecorder.start();
 
             mediaRecorder.ondataavailable = function (event) {
@@ -68,6 +67,7 @@
         holdTimeout = setTimeout(() => {
           isHeld = true;
           // start recording canvas
+          const canvas = document.querySelector('canvas');
           recording = record(canvas)
         }, holdDuration);
       });
