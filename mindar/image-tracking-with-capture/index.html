@@ -132,7 +132,7 @@
 
       function share() {
         if (document.querySelector('#picture-taken')) {
-          const canvas = document.querySelector('picture-taken');
+          const canvas = document.querySelector('#picture-taken');
           canvas.toBlob(async (blob) => {
             // Even if you want to share just one file you need to
             // send them as an array of files.
@@ -155,23 +155,26 @@
             }
           })
         } else if (document.querySelector('#video-output')) {
-          const files = [new File([blob], 'video.webm', { type: blob.type })]
-          const shareData = {
-            text: 'Video to share',
-            title: 'Share...',
-            files,
-          }
-          if (navigator.canShare(shareData)) {
-            try {
-              navigator.share(shareData)
-            } catch (err) {
-              if (err.name !== 'AbortError') {
-                console.error(err.name, err.message)
-              }
+          const video = document.querySelector('#video-output');
+          video.toBlob(async (blob) => {
+            const files = [new File([blob], 'video.webm', { type: blob.type })]
+            const shareData = {
+              text: 'Video to share',
+              title: 'Share...',
+              files,
             }
-          } else {
-            console.warn('Sharing not supported', shareData)
-          }
+            if (navigator.canShare(shareData)) {
+              try {
+                navigator.share(shareData)
+              } catch (err) {
+                if (err.name !== 'AbortError') {
+                  console.error(err.name, err.message)
+                }
+              }
+            } else {
+              console.warn('Sharing not supported', shareData)
+            }
+          })
         }
         const btnShare = document.getElementById('button-share');
         document.body.removeChild(btnShare);
