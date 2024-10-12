@@ -50,7 +50,7 @@
         return new Promise(function (res, rej) {
           var stream = canvas.captureStream(25 /*fps*/);
           mediaRecorder = new MediaRecorder(stream, {
-              mimeType: "video/webm; codecs=vp9"
+              mimeType: "video/mp4"
           });
             mediaRecorder.start();
 
@@ -59,7 +59,7 @@
             }
 
             mediaRecorder.onstop = function (event) {
-                blob_video = new Blob(recordedChunks, {type: "video/webm" });
+                blob_video = new Blob(recordedChunks, {type: "video/mp4" });
                 var url = URL.createObjectURL(blob_video);
                 res(url);
             }
@@ -156,7 +156,7 @@
             }
           })
         } else if (document.querySelector('#video-output')) {
-          const files = [new File([blob_video], 'video.webm', { type: blob_video.type })]
+          const files = [new File([blob_video], 'video.mp4', { type: blob_video.type })]
           const shareData = {
             text: 'Video to share',
             title: 'Share...',
