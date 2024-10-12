@@ -81,7 +81,7 @@
           //stop recording and make video file
           mediaRecorder.stop();
           var video$ = document.createElement('video')
-          video$.setAttribute('id', "video$")
+          video$.setAttribute('id', "video-output")
           document.body.appendChild(video$)
           recording.then(url => video$.setAttribute('src', url) )
         } else {
@@ -137,7 +137,7 @@
         // // attached to the `Player.prototype`; so, there is no need to assign it
         // // to a variable.
         // require("videojs-share");
-        var player = videojs("video$");
+        var player = videojs("video-output");
 
         var shareOptions = {
           socials: [
