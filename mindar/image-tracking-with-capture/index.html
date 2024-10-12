@@ -77,17 +77,18 @@
 
       btnCapture.addEventListener('mouseup', () => {
         clearTimeout(holdTimeout);
+        const overlay = document.getElementById('overlay');
 
         if (isHeld) {
           //stop recording and make video file
           mediaRecorder.stop();
           var video$ = document.createElement('video')
           video$.setAttribute('id', "video-output")
-          document.body.appendChild(video$)
+          //document.body.appendChild(video$)
+          overlay.appendChild(video$)
           recording.then(url => video$.setAttribute('src', url) )
         } else {
           //take picture
-          const overlay = document.getElementById('overlay');
           const video = document.querySelector("video");
           let canvas;
           if (document.querySelector('#picture-taken')) {
