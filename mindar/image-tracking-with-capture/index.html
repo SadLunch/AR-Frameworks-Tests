@@ -131,44 +131,50 @@
       })
 
       function share() {
-        // var videojs = require("video.js");
-
-        // // The actual plugin function is exported by this module, but it is also
-        // // attached to the `Player.prototype`; so, there is no need to assign it
-        // // to a variable.
-        // require("videojs-share");
-        var player = videojs("video-output");
-
-        var shareOptions = {
-          socials: [
-            "fb",
-            "tw",
-            "reddit",
-            "gp",
-            "messenger",
-            "linkedin",
-            "whatsapp",
-            "mail",
-          ],
-
-          url: window.location.href,
-          title: "Share AR experience",
-          description: "Share your AR experience in any of your social media accounts",
-          image: "", //Maybe capture a snapshot at the beggining of the recording to show here
-
-          // required for Facebook and Messenger
-          fbAppId: "12345",
-          // optional for Facebook
-          redirectUri: window.location.href + "#close",
-
-          // optinal embed code
-          embedCode:
-            '<iframe src="' +
-            window.location.href +
-            '" width="560" height="315" frameborder="0" allowfullscreen></iframe>',
-        };
-
-        player.share(shareOptions);
+        if (document.querySelector('#picture-taken')) {
+          const canvas = document.querySelector('picture-taken');
+          canvas.toBlob(async (blob) => {
+            // Even if you want to share just one file you need to
+            // send them as an array of files.
+            const files = [new File([blob], 'image.png', { type: blob.type })]
+            const shareData = {
+              text: 'Picture to share',
+              title: 'Share...',
+              files,
+            }
+            if (navigator.canShare(shareData)) {
+              try {
+                await navigator.share(shareData)
+              } catch (err) {
+                if (err.name !== 'AbortError') {
+                  console.error(err.name, err.message)
+                }
+              }
+            } else {
+              console.warn('Sharing not supported', shareData)
+            }
+          })
+        } else if (document.querySelector('#video-output')) {
+          const files = [new File([blob], 'video.webm', { type: blob.type })]
+          const shareData = {
+            text: 'Video to share',
+            title: 'Share...',
+            files,
+          }
+          if (navigator.canShare(shareData)) {
+            try {
+              navigator.share(shareData)
+            } catch (err) {
+              if (err.name !== 'AbortError') {
+                console.error(err.name, err.message)
+              }
+            }
+          } else {
+            console.warn('Sharing not supported', shareData)
+          }
+        }
+        const btnShare = document.getElementById('button-share');
+        document.body.removeChild(btnShare);
       }
 
       function test_click() {
