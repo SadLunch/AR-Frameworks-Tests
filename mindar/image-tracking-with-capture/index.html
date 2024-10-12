@@ -43,6 +43,7 @@
       const holdDuration = 1000;
       let recording;
       let mediaRecorder;
+      let blob_video;
 
       function record(canvas) {
         var recordedChunks = [];
@@ -58,7 +59,7 @@
             }
 
             mediaRecorder.onstop = function (event) {
-                var blob = new Blob(recordedChunks, {type: "video/webm" });
+                blob_video = new Blob(recordedChunks, {type: "video/webm" });
                 var url = URL.createObjectURL(blob);
                 res(url);
             }
@@ -155,26 +156,23 @@
             }
           })
         } else if (document.querySelector('#video-output')) {
-          const video = document.querySelector('#video-output');
-          video.toBlob(async (blob) => {
-            const files = [new File([blob], 'video.webm', { type: blob.type })]
-            const shareData = {
-              text: 'Video to share',
-              title: 'Share...',
-              files,
-            }
-            if (navigator.canShare(shareData)) {
-              try {
-                navigator.share(shareData)
-              } catch (err) {
-                if (err.name !== 'AbortError') {
-                  console.error(err.name, err.message)
-                }
+          const files = [new File([blob_video], 'video.webm', { type: blob_video.type })]
+          const shareData = {
+            text: 'Video to share',
+            title: 'Share...',
+            files,
+          }
+          if (navigator.canShare(shareData)) {
+            try {
+              navigator.share(shareData)
+            } catch (err) {
+              if (err.name !== 'AbortError') {
+                console.error(err.name, err.message)
               }
-            } else {
-              console.warn('Sharing not supported', shareData)
             }
-          })
+          } else {
+            console.warn('Sharing not supported', shareData)
+          }
         }
         const btnShare = document.getElementById('button-share');
         document.body.removeChild(btnShare);
