@@ -4,8 +4,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/video.js@8.18.1/dist/video.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/videojs-share@3.2.1/dist/videojs-share.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/video.js/dist/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-share/dist/videojs-share.min.js"></script>
     <title>MindAR Image Tracking Test Website</title>
     <style>
       #scene {
@@ -137,7 +137,7 @@
         // // attached to the `Player.prototype`; so, there is no need to assign it
         // // to a variable.
         // require("videojs-share");
-        var player = new videojs("video-output");
+        var player = videojs("video-output");
 
         var shareOptions = {
           socials: [
