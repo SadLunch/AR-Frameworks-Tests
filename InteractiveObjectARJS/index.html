@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive AR.js Example</title>
+
+  <!-- Include A-Frame and AR.js libraries -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #instructions {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="instructions">
+    Click or drag on the object to move it!
+  </div>
+
+  <a-scene embedded arjs="sourceType: webcam;">
+    <!-- Marker for AR interaction -->
+    <a-marker preset="hiro" id="marker">
+      <!-- 3D Object (a box) -->
+      <a-box id="movable-box" position="0 0.5 0" material="color: red;" scale="0.5 0.5 0.5"></a-box>
+    </a-marker>
+
+    <!-- Camera for AR -->
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    let selectedObject = null;
+    let marker = document.querySelector('#marker');
+    let box = document.querySelector('#movable-box');
+
+    // Variables to store the initial touch/click position
+    let initialX, initialY;
+
+    // Listen for click and touch events on the box
+    box.addEventListener('mousedown', onStartInteraction);
+    box.addEventListener('touchstart', onStartInteraction);
+
+    // Handle the start of the interaction (mouse down or touch start)
+    function onStartInteraction(event) {
+      event.preventDefault();
+      selectedObject = box;
+
+      // Get the initial position of the touch or click
+      if (event.type === 'mousedown') {
+        initialX = event.clientX;
+        initialY = event.clientY;
+      } else if (event.type === 'touchstart') {
+        initialX = event.touches[0].clientX;
+        initialY = event.touches[0].clientY;
+      }
+
+      // Listen for mouse move or touch move events
+      document.addEventListener('mousemove', onMoveObject);
+      document.addEventListener('touchmove', onMoveObject);
+
+      // Listen for the end of interaction (release)
+      document.addEventListener('mouseup', onEndInteraction);
+      document.addEventListener('touchend', onEndInteraction);
+    }
+
+    // Handle object movement
+    function onMoveObject(event) {
+      if (!selectedObject) return;
+
+      // Get the current touch or mouse position
+      let currentX, currentY;
+      if (event.type === 'mousemove') {
+        currentX = event.clientX;
+        currentY = event.clientY;
+      } else if (event.type === 'touchmove') {
+        currentX = event.touches[0].clientX;
+        currentY = event.touches[0].clientY;
+      }
+
+      // Calculate the movement distance (in pixels)
+      let deltaX = currentX - initialX;
+      let deltaY = currentY - initialY;
+
+      // Convert movement into AR.js world units (adjust scaling as needed)
+      let movementScale = 0.005; // Tweak this to control the movement sensitivity
+      let newPosX = selectedObject.object3D.position.x + deltaX * movementScale;
+      let newPosY = selectedObject.object3D.position.y - deltaY * movementScale; // Invert Y to match screen movement
+
+      // Update the object's position
+      selectedObject.object3D.position.set(newPosX, newPosY, selectedObject.object3D.position.z);
+
+      // Update the initial position for continuous movement
+      initialX = currentX;
+      initialY = currentY;
+    }
+
+    // Handle the end of interaction (mouse up or touch end)
+    function onEndInteraction(event) {
+      selectedObject = null;
+
+      // Remove the movement event listeners
+      document.removeEventListener('mousemove', onMoveObject);
+      document.removeEventListener('touchmove', onMoveObject);
+
+      // Remove the end interaction event listeners
+      document.removeEventListener('mouseup', onEndInteraction);
+      document.removeEventListener('touchend', onEndInteraction);
+    }
+  </script>
+</body>
+</html>
