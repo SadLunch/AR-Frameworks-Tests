@@ -27,7 +27,7 @@
     Click or drag on the object to move it!
   </div>
 
-  <a-scene embedded arjs="sourceType: webcam;">
+  <a-scene vr-mode-ui="enabled: false;" renderer="logarithmicDepthBuffer: true;" embedded arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;">
     <!-- Marker for AR interaction -->
     <a-marker preset="hiro" id="marker">
       <!-- 3D Object (a box) -->
