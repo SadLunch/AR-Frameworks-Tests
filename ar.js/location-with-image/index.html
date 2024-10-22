@@ -171,7 +171,7 @@
         var threeGLTFLoader = new THREE.GLTFLoader();
         var model;
 
-        threeGLTFLoader.load("./model/scene.glb", function (gltf) {
+        threeGLTFLoader.load("./model/scene.gltf", function (gltf) {
             model = gltf.scene.children[0];
             model.name = 'Doorway';
             // const clips = gltf.animations;
