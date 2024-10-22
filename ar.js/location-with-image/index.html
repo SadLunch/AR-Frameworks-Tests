@@ -13,29 +13,23 @@
 </head>
 
 <body>
-    <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false'
-        renderer='antialias: true; alpha: true'>
+    <a-scene vr-mode-ui='enabled: false' arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false' renderer='antialias: true; alpha: true'>
         <a-camera gps-new-camera='gpsMinDistance: 5' rotation-reader></a-camera>
-        <a-text id="testText" value="This content will always face you." look-at="[gps-new-camera]" scale="50 50 50"></a-text>
     </a-scene>
     <script>
         window.onload = () => {
-            let testEntityAdded = false;
-
-            const el = document.querySelector("[gps-new-camera]");
-
-            el.addEventListener("gps-camera-update-position", e => {
-                if (!testEntityAdded) {
-                    alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
-                    // Add a box to the north of the initial GPS position
-                    const entity = document.getElementById("testText");
-                    entity.setAttribute('gps-entity-place', {
-                        latitude: e.detail.position.latitude + 0.001,
-                        longitude: e.detail.position.longitude
-                    });
-                }
-                testEntityAdded = true;
+            let lat, lng;
+            navigator.geolocation.getCurrentPosition((position) => {
+                lat = position.coords.latitude;
+                lng = position.coords.longitude;
             });
+            let box = document.createElement('a-entity');
+            box.setAttribute('material', 'color', 'red');
+            box.setAttribute('geometry', 'primitive', 'box');
+            box.setAttribute('gps-new-entity-place', 'latitude', lat, 'longitude', lng);
+            box.setAttribute('scale', '20 20 20');
+            let scene = document.querySelector('a-scene');
+            scene.appendChild(box);
         };
     </script>
 </body>
