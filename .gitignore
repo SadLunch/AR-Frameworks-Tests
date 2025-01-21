@@ -3,6 +3,4 @@
 /venv
 
 /.venv
-/node_modules
-package-lock.json
-package.json
+.codegpt
